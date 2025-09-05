@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Avançada de Combinações - Timemania</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#4949ca',
+                        timemania: '#FFF600',
+                        'timemania-green': '#12923D',
+                        'timemania-light': '#FFF833',
+                        'timemania-dark': '#E6DE00',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Animações melhoradas */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Combinações destacadas com cores da Timemania */
+        .combinacao-atrasada {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+            border-left: 4px solid #dc2626;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+        }
+        
+        .combinacao-media {
+            background: linear-gradient(135deg, rgba(255, 246, 0, 0.1) 0%, rgba(255, 246, 0, 0.05) 100%);
+            border-left: 4px solid #FFF600;
+            box-shadow: 0 2px 8px rgba(255, 246, 0, 0.1);
+        }
+        
+        .combinacao-recente {
+            background: linear-gradient(135deg, rgba(18, 146, 61, 0.1) 0%, rgba(18, 146, 61, 0.05) 100%);
+            border-left: 4px solid #12923D;
+            box-shadow: 0 2px 8px rgba(18, 146, 61, 0.1);
+        }
+        
+        /* Status indicador melhorado */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-live {
+            background-color: #FFF600;
+            box-shadow: 0 0 8px #FFF600;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-loading {
+            background-color: #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-error {
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        
+        /* Estilos para números da Timemania */
+        .numero-timemania {
+            background: linear-gradient(135deg, #FFF600, #E6DE00);
+            color: #000;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(255, 246, 0, 0.3);
+            border: 2px solid #12923D;
+        }
+        
+        /* Estilos específicos para dígitos únicos pequenos e inline */
+        .digitos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            align-items: center;
+        }
+        
+        .digito-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #374151;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+        }
+        
+        .dark .digito-inline {
+            background-color: #4b5563;
+            color: #f3f4f6;
+            border-color: #6b7280;
+        }
+        
+        /* Estilos para time do coração */
+        .time-coracao {
+            background: linear-gradient(135deg, #12923D, #0B5B26);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(18, 146, 61, 0.3);
+            max-width: 120px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        /* Estilos para cabeçalhos ordenáveis */
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .sortable-header:hover {
+            background-color: rgba(255, 246, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        /* Progress bar da Timemania */
+        .progress-bar-timemania {
+            background: linear-gradient(90deg, #FFF600 0%, #12923D 50%, #0B5B26 100%);
+            transition: width 0.3s ease;
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateX(450px);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #12923D, #0B5B26);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        /* Scroll personalizado */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 3px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 246, 0, 0.5);
+            border-radius: 3px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 246, 0, 0.7);
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .dark .skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+
+        /* Destaque para números favoritos da Timemania */
+        .numero-favorito {
+            background: linear-gradient(135deg, #FFF833, #12923D);
+            animation: pulse 2s infinite;
+        }
+
+        /* Grid de números da Timemania */
+        .grid-numeros-timemania {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            max-width: 280px;
+        }
+        
+        /* Estilo futebolístico */
+        .campo-futebol {
+            background: linear-gradient(135deg, #12923D, #0B5B26);
+            border: 2px solid #FFF600;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <header class="mb-8 text-center fade-in">
+            <div class="flex justify-center items-center mb-4">
+                <img src="https://i.postimg.cc/W4g9ShFc/timemania.png" alt="Timemania Logo" class="h-16 w-54 mr-4 rounded-lg shadow-lg">
+                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-timemania to-timemania-green">
+                    ⚽ Análise Avançada - Timemania
+                </h1>
+            </div>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Sistema inteligente de análise de combinações dos 7 números + Time do Coração da Timemania
+            </p>
+            <div class="flex justify-center mt-6">
+                <div class="data-timestamp text-sm text-gray-600 dark:text-gray-400 flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-md">
+                    <span id="statusIndicator" class="status-indicator status-loading"></span>
+                    <span id="lastUpdateTime">Inicializando sistema...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Painel de controles melhorado -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 card-hover">
+            <div class="flex flex-wrap gap-4 items-center mb-6">
+                <button id="loadButton" class="bg-gradient-to-r from-timemania to-timemania-green hover:from-timemania-green hover:to-timemania text-black dark:text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <span class="flex items-center">
+                        <svg id="loadIcon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Carregar Dados
+                    </span>
+                </button>
+                
+                <button id="analisarCombinacoes" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Analisar Combinações
+                    </span>
+                </button>
+                
+                <button id="gerarPalpites" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Gerar Palpites
+                    </span>
+                </button>
+                
+                <button id="toggleThemeButton" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-3 rounded-xl font-medium transition-all duration-300 shadow-md">
+                    <span class="flex items-center">
+                        <svg id="themeIcon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                        Tema
+                    </span>
+                </button>
+                
+                <div class="flex items-center bg-gray-50 dark:bg-gray-900 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <label for="tamanhoCombo" class="mr-3 font-medium whitespace-nowrap">Tamanho:</label>
+                    <select id="tamanhoCombo" class="bg-transparent border-none focus:ring-0 text-base font-medium min-w-[120px]">
+                        <option value="3">3 dígitos</option>
+                        <option value="4">4 dígitos</option>
+                        <option value="5">5 dígitos</option>
+                        <option value="6">6 dígitos</option>
+                        <option value="7" selected>7 dígitos</option>
+                        <option value="8">8 dígitos</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <span id="combinacoesInfo" class="bg-yellow-50 dark:bg-yellow-900/30 px-3 py-2 rounded-lg">
+                        <span class="font-medium">330</span> combinações possíveis
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Barra de progresso melhorada -->
+            <div id="progressContainer" class="hidden mb-4">
+                <div class="flex justify-between text-sm mb-2">
+                    <span id="progressText">Carregando...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                    <div id="progressBar" class="progress-bar-timemania h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Status messages melhorados -->
+            <div id="loadingMessage" class="text-center py-4 px-6 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 hidden">
+                <div class="flex items-center justify-center">
+                    <svg class="animate-spin h-6 w-6 mr-3" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="loadingText">Carregando resultados da Timemania...</span>
+                </div>
+            </div>
+            
+            <div id="completedMessage" class="text-center py-4 px-6 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 hidden slide-in">
+                <div class="flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span id="completedText">Carregamento concluído!</span>
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="text-center py-4 px-6 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200 hidden">
+                <div class="flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="errorText">Erro ao carregar os dados</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout principal com grid responsivo -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Combinações com maior probabilidade -->
+            <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5 bg-gradient-to-r from-timemania/5 to-timemania-green/5">
+                    <h2 class="text-2xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-timemania-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Combinações de Alto Potencial
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Combinações de dígitos estatisticamente mais prováveis de aparecer nos próximos sorteios da Timemania
+                    </p>
+                </div>
+                <div class="p-6">
+                    <div id="combinacoesAtrasadas" class="space-y-6">
+                        <!-- Placeholder com skeleton loading -->
+                        <div class="space-y-4">
+                            <div class="skeleton h-24 rounded-xl"></div>
+                            <div class="skeleton h-24 rounded-xl"></div>
+                            <div class="skeleton h-24 rounded-xl"></div>
+                        </div>
+                        <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <p class="text-lg font-medium mb-2">Aguardando Análise</p>
+                            <p>Carregue os dados e clique em "Analisar Combinações" para ver os resultados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas gerais -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5 bg-gradient-to-r from-green-500/5 to-blue-500/5">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-timemania-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Estatísticas do Sistema
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div id="estatisticasGerais">
+                        <!-- Placeholder skeleton -->
+                        <div class="space-y-6">
+                            <div class="skeleton h-32 rounded-xl"></div>
+                            <div class="skeleton h-40 rounded-xl"></div>
+                            <div class="skeleton h-48 rounded-xl"></div>
+                        </div>
+                        <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <p class="font-medium">Carregue os dados para ver estatísticas detalhadas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Palpites Inteligentes -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden card-hover">
+            <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5 bg-gradient-to-r from-purple-500/5 to-pink-500/5">
+                <h2 class="text-2xl font-bold flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Palpites Inteligentes da Timemania
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Sugestões de jogos com 7 números + Time do Coração baseadas em análise estatística dos padrões históricos
+                </p>
+            </div>
+            <div class="p-6">
+                <div id="palpitesContainer" class="space-y-6">
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <p class="text-lg font-medium mb-2">Palpites não gerados</p>
+                        <p>Carregue os dados e clique em "Gerar Palpites" para ver sugestões inteligentes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimos resultados -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden card-hover">
+            <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5 bg-gradient-to-r from-timemania/5 to-timemania-green/5">
+                <h2 class="text-2xl font-bold flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-timemania-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Histórico Recente da Timemania
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Os 10 sorteios mais recentes com 7 números + Time do Coração
+                </p>
+            </div>
+            <div class="overflow-x-auto custom-scroll">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Concurso
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Data
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                7 Números Sorteados
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Time do Coração
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Dígitos Únicos
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Qtd. Dígitos
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" id="ultimosResultadosBody">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <div class="skeleton h-8 rounded mx-auto max-w-md mb-4"></div>
+                                <div class="skeleton h-6 rounded mx-auto max-w-sm"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer melhorado -->
+        <footer class="mt-16 py-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400">
+            <div class="flex flex-col items-center space-y-4">
+                <p class="font-medium">
+                    Desenvolvido por <span class="text-timemania-green font-bold">Márcio Fernando Maia</span>
+                </p>
+                <p class="text-xs opacity-75">
+                    Sistema de análise estatística para Timemania • Todos os direitos reservados © 2025
+                </p>
+                <div class="flex items-center space-x-4 text-xs">
+                    <span class="flex items-center">
+                        <span class="status-indicator status-live mr-1"></span>
+                        Sistema Online
+                    </span>
+                    <span>|</span>
+                    <span>Versão 2.0</span>
+                    <span>|</span>
+                    <span>Dados: Caixa Econômica Federal</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ===== CONFIGURAÇÃO GLOBAL =====
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        function handleColorSchemeChange(e) {
+            if (e.matches) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon(false);
+            }
+        }
+        
+        if (mediaQuery.matches) {
+            document.documentElement.classList.add('dark');
+        }
+        mediaQuery.addEventListener('change', handleColorSchemeChange);
+
+        function updateThemeIcon(isDark) {
+            const themeIcon = document.getElementById('themeIcon');
+            if (isDark) {
+                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`;
+            } else {
+                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>`;
+            }
+        }
+
+        updateThemeIcon(document.documentElement.classList.contains('dark'));
+
+        // ===== VARIÁVEIS GLOBAIS =====
+        let allResults = [];
+        let combinacoesAnalise = {};
+        let ultimoConcurso = 0;
+        let isLoading = false;
+        let tamanhoAtual = 7;
+        let combinacoesFiltradas = [];
+        let ordenacaoAtual = { campo: 'potencial', direcao: 'desc' };
+
+        // ===== ELEMENTOS DOM =====
+        const elements = {
+            loadButton: document.getElementById('loadButton'),
+            analisarCombinacoesBtn: document.getElementById('analisarCombinacoes'),
+            gerarPalpitesBtn: document.getElementById('gerarPalpites'),
+            toggleThemeButton: document.getElementById('toggleThemeButton'),
+            tamanhoComboSelect: document.getElementById('tamanhoCombo'),
+            combinacoesInfo: document.getElementById('combinacoesInfo'),
+            statusIndicator: document.getElementById('statusIndicator'),
+            lastUpdateTime: document.getElementById('lastUpdateTime'),
+            progressContainer: document.getElementById('progressContainer'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            progressPercent: document.getElementById('progressPercent'),
+            loadingMessage: document.getElementById('loadingMessage'),
+            loadingText: document.getElementById('loadingText'),
+            completedMessage: document.getElementById('completedMessage'),
+            completedText: document.getElementById('completedText'),
+            errorMessage: document.getElementById('errorMessage'),
+            errorText: document.getElementById('errorText'),
+            combinacoesAtrasadas: document.getElementById('combinacoesAtrasadas'),
+            estatisticasGerais: document.getElementById('estatisticasGerais'),
+            palpitesContainer: document.getElementById('palpitesContainer'),
+            ultimosResultadosBody: document.getElementById('ultimosResultadosBody')
+        };
+
+        // ===== CONFIGURAÇÃO DE APIS DA TIMEMANIA =====
+        const API_CONFIG = {
+            TIMEMANIA_STATIC: {
+                url: "https://servicebus2.caixa.gov.br/portaldeloterias/api/timemania",
+                description: "API Oficial da Caixa - Timemania"
+            },
+            TIMEMANIA_CONCURSO: (numero) => ({
+                url: `https://servicebus2.caixa.gov.br/portaldeloterias/api/timemania/${numero}`,
+                description: `API Oficial Caixa - Timemania Concurso ${numero}`
+            }),
+            PROXIES: [
+                '',
+                'https://corsproxy.io/?',
+                'https://api.allorigins.win/raw?url=',
+                'https://cors-anywhere.herokuapp.com/',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ]
+        };
+
+        // ===== FUNÇÕES UTILITÁRIAS =====
+        function showToast(message, type = 'success', duration = 4000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 20px;">${icons[type] || icons.info}</span>
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 2px;">${message}</div>
+                        <div style="font-size: 12px; opacity: 0.8;">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        }
+
+        function updateProgress(current, total, text = '') {
+            const percent = Math.round((current / total) * 100);
+            elements.progressBar.style.width = `${percent}%`;
+            elements.progressPercent.textContent = `${percent}%`;
+            if (text) elements.progressText.textContent = text;
+        }
+
+        function updateSystemStatus(status, message) {
+            const indicator = elements.statusIndicator;
+            indicator.className = `status-indicator status-${status}`;
+            elements.lastUpdateTime.textContent = message;
+        }
+
+        function comb(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            
+            let result = 1;
+            for (let i = 1; i <= k; i++) {
+                result *= (n - (k - i));
+                result /= i;
+            }
+            return Math.round(result);
+        }
+
+        function gerarCombinacoes(conjunto, tamanho) {
+            const combinacoes = [];
+            
+            function combinar(inicio, atual) {
+                if (atual.length === tamanho) {
+                    combinacoes.push([...atual]);
+                    return;
+                }
+                
+                for (let i = inicio; i < conjunto.length; i++) {
+                    atual.push(conjunto[i]);
+                    combinar(i + 1, atual);
+                    atual.pop();
+                }
+            }
+            
+            combinar(0, []);
+            return combinacoes;
+        }
+
+        function calcularPotencial(combo, mediaGeral = 0) {
+            if (!combo.mediaIntervalos || typeof combo.concursosSemAparecer !== 'number') {
+                return 0;
+            }
+            
+            const fatorIntervalo = Math.min(combo.concursosSemAparecer / combo.mediaIntervalos, 2);
+            const fatorFrequencia = Math.min(combo.ocorrencias / 200, 1); // Ajustado para Timemania
+            
+            const variacao = combo.maiorIntervalo && combo.menorIntervalo 
+                ? (combo.maiorIntervalo - combo.menorIntervalo) / combo.mediaIntervalos
+                : 1;
+            const fatorEstabilidade = Math.max(0, 1 - (variacao / 2));
+            
+            const potencial = (fatorIntervalo * 0.6) + (fatorFrequencia * 0.25) + (fatorEstabilidade * 0.15);
+            
+            return Math.min(1, Math.max(0, potencial));
+        }
+
+        function getStatusInfo(potencial) {
+            if (potencial >= 0.7) return {
+                text: 'ALTO',
+                class: 'combinacao-atrasada',
+                color: 'text-red-600 dark:text-red-400',
+                emoji: '🔴'
+            };
+            if (potencial >= 0.4) return {
+                text: 'MÉDIO',
+                class: 'combinacao-media',
+                color: 'text-yellow-600 dark:text-yellow-400',
+                emoji: '🟡'
+            };
+            return {
+                text: 'BAIXO',
+                class: 'combinacao-recente',
+                color: 'text-green-600 dark:text-green-400',
+                emoji: '🟢'
+            };
+        }
+
+        // ===== FUNÇÕES DE API =====
+        async function fetchWithProxy(url, attempts = 0) {
+            const proxies = API_CONFIG.PROXIES;
+            
+            if (attempts >= proxies.length) {
+                throw new Error('Todos os proxies falharam');
+            }
+            
+            try {
+                let proxyUrl;
+                if (proxies[attempts].includes('?url=') || proxies[attempts].includes('?quest=')) {
+                    proxyUrl = proxies[attempts] + encodeURIComponent(url);
+                } else {
+                    proxyUrl = proxies[attempts] + url;
+                }
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                if (attempts < proxies.length - 1) {
+                    return fetchWithProxy(url, attempts + 1);
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        async function getLatestConcursoNumber() {
+            try {
+                const data = await fetchWithProxy(API_CONFIG.TIMEMANIA_STATIC.url);
+                if (data && data.numero) {
+                    return parseInt(data.numero);
+                }
+                throw new Error("Não foi possível obter o número do último concurso");
+            } catch (error) {
+                console.error(`Erro ao obter último concurso: ${error.message}`);
+                return 2277; // Valor padrão para Timemania
+            }
+        }
+
+        async function fetchAllConcursos() {
+            try {
+                elements.progressContainer.classList.remove('hidden');
+                updateProgress(0, 100, 'Conectando às APIs da Timemania...');
+                
+                let allResults = [];
+                
+                // Busca individual para Timemania
+                updateProgress(20, 100, 'Iniciando busca individual de concursos...');
+                allResults = [];
+                
+                const ultimoConcurso = await getLatestConcursoNumber();
+                const concursoInicial = Math.max(1, ultimoConcurso - 500); // Últimos 500 concursos para otimizar
+                const batchSize = 10; // Batch para Timemania
+                
+                for (let i = concursoInicial; i <= ultimoConcurso; i += batchSize) {
+                    const batchEnd = Math.min(i + batchSize - 1, ultimoConcurso);
+                    const progress = 20 + ((i - concursoInicial) / (ultimoConcurso - concursoInicial)) * 80;
+                    
+                    updateProgress(progress, 100, `Buscando concursos ${i} a ${batchEnd}...`);
+                    
+                    const requests = [];
+                    for (let concursoNum = i; concursoNum <= batchEnd; concursoNum++) {
+                        const delay = (concursoNum - i) * 100; // Delay para não sobrecarregar
+                        
+                        requests.push(
+                            new Promise(resolve => {
+                                setTimeout(async () => {
+                                    try {
+                                        const url = API_CONFIG.TIMEMANIA_CONCURSO(concursoNum).url;
+                                        const concursoData = await fetchWithProxy(url);
+                                        
+                                        if (concursoData && concursoData.numero && concursoData.dataApuracao && concursoData.listaDezenas) {
+                                            resolve({
+                                                concurso: concursoData.numero.toString(),
+                                                data: concursoData.dataApuracao,
+                                                dezenas: concursoData.listaDezenas,
+                                                timeCoracao: concursoData.nomeTimeCoracaoMesSorte || ''
+                                            });
+                                        } else {
+                                            resolve(null);
+                                        }
+                                    } catch (error) {
+                                        resolve(null);
+                                    }
+                                }, delay);
+                            })
+                        );
+                    }
+                    
+                    const results = await Promise.all(requests);
+                    
+                    for (const result of results) {
+                        if (result) {
+                            allResults.push(result);
+                        }
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                allResults.sort((a, b) => parseInt(a.concurso) - parseInt(b.concurso));
+                return allResults;
+                
+            } catch (error) {
+                console.error(`Erro ao buscar concursos: ${error.message}`);
+                throw error;
+            } finally {
+                elements.progressContainer.classList.add('hidden');
+            }
+        }
+
+        // ===== FUNÇÕES PRINCIPAIS =====
+        async function fetchTimemaniaResults() {
+            if (isLoading) return;
+            
+            updateSystemStatus('loading', 'Carregando dados da Timemania...');
+            elements.loadingMessage.classList.remove('hidden');
+            elements.completedMessage.classList.add('hidden');
+            elements.errorMessage.classList.add('hidden');
+            
+            isLoading = true;
+            elements.loadButton.disabled = true;
+            
+            const loadIcon = document.getElementById('loadIcon');
+            loadIcon.classList.add('animate-spin');
+            
+            try {
+                elements.loadingText.textContent = 'Conectando à API da Timemania...';
+                const concursos = await fetchAllConcursos();
+                
+                if (!concursos || concursos.length === 0) {
+                    throw new Error("Não foi possível obter dados dos concursos da Timemania");
+                }
+                
+                elements.loadingText.textContent = 'Processando resultados da Timemania...';
+                processContestData(concursos);
+                
+                elements.loadingText.textContent = 'Atualizando interface...';
+                updateUI();
+                
+                elements.loadingMessage.classList.add('hidden');
+                elements.completedMessage.classList.remove('hidden');
+                elements.completedText.textContent = `✅ ${allResults.length} concursos da Timemania carregados!`;
+                
+                const now = new Date();
+                const timeString = now.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                updateSystemStatus('live', `Dados atualizados em: ${timeString}`);
+                
+                showToast(`Timemania carregada! ${allResults.length} concursos disponíveis`, 'success');
+                
+                setTimeout(() => analisarCombinacoes(), 1000);
+                
+                return true;
+                
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                elements.errorMessage.classList.remove('hidden');
+                elements.errorText.textContent = `❌ ${error.message}`;
+                elements.loadingMessage.classList.add('hidden');
+                
+                updateSystemStatus('error', 'Erro ao carregar dados');
+                showToast(`Erro: ${error.message}`, 'error');
+                
+                return false;
+            } finally {
+                elements.loadButton.disabled = false;
+                isLoading = false;
+                loadIcon.classList.remove('animate-spin');
+                
+                setTimeout(() => {
+                    elements.completedMessage.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        function processContestData(concursos) {
+            allResults = [];
+            
+            for (const concurso of concursos) {
+                if (!concurso.concurso || !concurso.dezenas || !Array.isArray(concurso.dezenas)) {
+                    continue;
+                }
+                
+                // Para Timemania, extrair dígitos únicos dos 7 números sorteados (1-80)
+                const digitosUnicosSet = new Set();
+                for (const dezena of concurso.dezenas) {
+                    const dezenaStr = dezena.toString();
+                    for (const digito of dezenaStr) {
+                        if (/\d/.test(digito)) {
+                            digitosUnicosSet.add(parseInt(digito));
+                        }
+                    }
+                }
+                
+                const digitosUnicos = Array.from(digitosUnicosSet).sort((a, b) => a - b);
+                
+                allResults.push({
+                    concurso: concurso.concurso,
+                    data: concurso.data,
+                    dezenas: concurso.dezenas,
+                    timeCoracao: concurso.timeCoracao || '',
+                    digitos: digitosUnicos,
+                    contagemDigitos: digitosUnicosSet.size
+                });
+            }
+            
+            allResults.sort((a, b) => parseInt(a.concurso) - parseInt(b.concurso));
+            
+            if (allResults.length > 0) {
+                ultimoConcurso = parseInt(allResults[allResults.length - 1].concurso);
+            }
+        }
+
+        function updateUI() {
+            atualizarUltimosResultados();
+            atualizarEstatisticasGerais();
+            atualizarInfoCombinacoes();
+        }
+
+        function atualizarInfoCombinacoes() {
+            const tamanho = parseInt(elements.tamanhoComboSelect.value);
+            const totalCombinacoes = comb(10, tamanho);
+            elements.combinacoesInfo.innerHTML = `
+                <span class="font-bold text-timemania-green">${totalCombinacoes.toLocaleString()}</span> combinações possíveis
+            `;
+        }
+
+        function atualizarUltimosResultados() {
+            if (!allResults || allResults.length === 0) {
+                elements.ultimosResultadosBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            Nenhum resultado disponível
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const ultimosResultados = [...allResults].reverse().slice(0, 10);
+            
+            elements.ultimosResultadosBody.innerHTML = '';
+            
+            ultimosResultados.forEach((resultado, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors fade-in';
+                row.style.animationDelay = `${index * 50}ms`;
+                
+                if (parseInt(resultado.concurso) === ultimoConcurso) {
+                    row.classList.add('bg-yellow-50', 'dark:bg-yellow-900/20', 'border-l-4', 'border-l-timemania');
+                }
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-bold text-lg ${parseInt(resultado.concurso) === ultimoConcurso ? 'text-timemania-green' : ''}">${resultado.concurso}</span>
+                        ${parseInt(resultado.concurso) === ultimoConcurso ? '<span class="ml-2 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">Mais Recente</span>' : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium">${resultado.data}</td>
+                    <td class="px-6 py-4">
+                        <div class="grid-numeros-timemania">
+                            ${resultado.dezenas.map(d => `
+                                <span class="numero-timemania">
+                                    ${d.toString().padStart(2, '0')}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="time-coracao" title="${resultado.timeCoracao}">
+                            ⚽ ${resultado.timeCoracao || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="digitos-container">
+                            ${resultado.digitos.map(d => `
+                                <span class="digito-inline">${d}</span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 font-bold">
+                            ${resultado.contagemDigitos}
+                        </span>
+                    </td>
+                `;
+                
+                elements.ultimosResultadosBody.appendChild(row);
+            });
+        }
+
+        function atualizarEstatisticasGerais() {
+            if (!allResults || allResults.length === 0) {
+                elements.estatisticasGerais.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                        <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <p class="font-medium">Nenhum dado disponível</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calcular distribuições específicas da Timemania
+            const distribuicaoQtd = {};
+            const frequenciaDigitos = {};
+            const frequenciaDezenas = {};
+            const frequenciaTimes = {};
+            
+            for (let i = 0; i <= 9; i++) {
+                frequenciaDigitos[i] = 0;
+            }
+            
+            for (let i = 1; i <= 80; i++) {
+                frequenciaDezenas[i] = 0;
+            }
+            
+            for (const resultado of allResults) {
+                const qtd = resultado.contagemDigitos;
+                distribuicaoQtd[qtd] = (distribuicaoQtd[qtd] || 0) + 1;
+                
+                for (const digito of resultado.digitos) {
+                    frequenciaDigitos[digito]++;
+                }
+                
+                for (const dezena of resultado.dezenas) {
+                    frequenciaDezenas[parseInt(dezena)]++;
+                }
+                
+                if (resultado.timeCoracao) {
+                    const time = resultado.timeCoracao.trim();
+                    frequenciaTimes[time] = (frequenciaTimes[time] || 0) + 1;
+                }
+            }
+            
+            const digitosOrdenados = Object.entries(frequenciaDigitos)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const dezenasOrdenadas = Object.entries(frequenciaDezenas)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+                
+            const timesOrdenados = Object.entries(frequenciaTimes)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            elements.estatisticasGerais.innerHTML = `
+                <div class="space-y-6 fade-in">
+                    <div class="bg-gradient-to-br from-yellow-50 to-green-50 dark:from-yellow-900/20 dark:to-green-900/20 rounded-xl p-5 border border-yellow-200 dark:border-yellow-800">
+                        <h3 class="font-bold text-lg mb-4 text-yellow-800 dark:text-yellow-200 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            ⚽ Resumo da Timemania
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-timemania-green">${ultimoConcurso}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Último Concurso</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-timemania-green">${allResults.length}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Total de Sorteios</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-yellow-200 dark:border-yellow-800">
+                            <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                                <strong>Último sorteio:</strong> ${allResults[allResults.length - 1].data}<br>
+                                <span class="text-xs opacity-75">7 números de 1 a 80 + Time do Coração</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+                        <h3 class="font-bold text-lg mb-4 text-blue-800 dark:text-blue-200 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Distribuição por Quantidade de Dígitos Únicos
+                        </h3>
+                        <div class="space-y-3">
+                            ${Object.entries(distribuicaoQtd)
+                                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                                .map(([qtd, count]) => {
+                                    const porcentagem = (count / allResults.length) * 100;
+                                    return `
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="font-medium">${qtd} dígitos únicos:</span>
+                                                <span class="text-blue-700 dark:text-blue-300">${count} vezes (${porcentagem.toFixed(1)}%)</span>
+                                            </div>
+                                            <div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-full h-2">
+                                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-500" style="width: ${porcentagem}%"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-5 border border-green-200 dark:border-green-800">
+                        <h3 class="font-bold text-lg mb-4 text-green-800 dark:text-green-200 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            </svg>
+                            Ranking dos Dígitos (0-9)
+                        </h3>
+                        <div class="grid grid-cols-5 gap-3">
+                            ${digitosOrdenados.map(([digito, count], index) => {
+                                const porcentagem = (count / allResults.length) * 100;
+                                const medalColor = index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-amber-600' : 'bg-timemania-green';
+                                return `
+                                    <div class="text-center">
+                                        <div class="relative mb-2">
+                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full ${medalColor} text-white font-bold text-lg shadow-lg">
+                                                ${digito}
+                                            </span>
+                                            ${index < 3 ? `<span class="absolute -top-1 -right-1 text-xs">🏆</span>` : ''}
+                                        </div>
+                                        <div class="text-sm font-bold text-green-700 dark:text-green-300">${count}</div>
+                                        <div class="text-xs text-green-600 dark:text-green-400">${porcentagem.toFixed(1)}%</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-5 border border-orange-200 dark:border-orange-800">
+                        <h3 class="font-bold text-lg mb-4 text-orange-800 dark:text-orange-200 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Top 15 Números mais Sorteados (1-80)
+                        </h3>
+                        <div class="grid grid-cols-5 gap-2">
+                            ${dezenasOrdenadas.map(([numero, count], index) => {
+                                return `
+                                    <div class="text-center">
+                                        <div class="numero-timemania ${index < 3 ? 'numero-favorito' : ''} mb-1">
+                                            ${numero.padStart(2, '0')}
+                                        </div>
+                                        <div class="text-xs font-bold text-orange-700 dark:text-orange-300">${count}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="campo-futebol p-5">
+                        <h3 class="font-bold text-lg mb-4 text-white flex items-center">
+                            ⚽ Top 10 Times do Coração Mais Sorteados
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${timesOrdenados.map(([time, count], index) => {
+                                return `
+                                    <div class="bg-white/20 p-2 rounded-lg text-center">
+                                        <div class="text-sm font-bold text-timemania">${index + 1}º</div>
+                                        <div class="text-xs text-white font-medium">${time.substring(0, 12)}${time.length > 12 ? '...' : ''}</div>
+                                        <div class="text-xs text-timemania font-bold">${count} vezes</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function analisarCombinacoes() {
+            if (!allResults || allResults.length === 0) {
+                showToast('Carregue os dados da Timemania primeiro!', 'warning');
+                return;
+            }
+            
+            elements.loadingMessage.classList.remove('hidden');
+            elements.loadingText.textContent = 'Analisando padrões da Timemania...';
+            
+            try {
+                tamanhoAtual = parseInt(elements.tamanhoComboSelect.value);
+                const todosDigitos = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                const todasCombinacoesPossiveis = gerarCombinacoes(todosDigitos, tamanhoAtual);
+                
+                console.log(`Analisando ${todasCombinacoesPossiveis.length} combinações de ${tamanhoAtual} dígitos na Timemania`);
+                
+                combinacoesAnalise = {};
+                
+                // Inicializar todas as combinações
+                for (const combo of todasCombinacoesPossiveis) {
+                    const comboStr = combo.join(',');
+                    combinacoesAnalise[comboStr] = {
+                        combinacao: combo,
+                        ocorrencias: 0,
+                        concursos: [],
+                        intervalos: [],
+                        ultimaAparicao: 0,
+                        mediaIntervalos: 0,
+                        medianaIntervalos: 0,
+                        menorIntervalo: Infinity,
+                        maiorIntervalo: 0,
+                        concursosSemAparecer: 0,
+                        potencial: 0
+                    };
+                }
+                
+                // Analisar ocorrências
+                for (const resultado of allResults) {
+                    const digitosSet = new Set(resultado.digitos);
+                    const concursoNum = parseInt(resultado.concurso);
+                    
+                    for (const combo of todasCombinacoesPossiveis) {
+                        const todosPresentes = combo.every(d => digitosSet.has(d));
+                        
+                        if (todosPresentes) {
+                            const comboStr = combo.join(',');
+                            const analise = combinacoesAnalise[comboStr];
+                            
+                            analise.ocorrencias++;
+                            analise.concursos.push(concursoNum);
+                            analise.ultimaAparicao = concursoNum;
+                            
+                            if (analise.concursos.length > 1) {
+                                const ultimoIdx = analise.concursos.length - 1;
+                                const intervalo = analise.concursos[ultimoIdx] - analise.concursos[ultimoIdx - 1];
+                                analise.intervalos.push(intervalo);
+                                
+                                analise.menorIntervalo = Math.min(analise.menorIntervalo, intervalo);
+                                analise.maiorIntervalo = Math.max(analise.maiorIntervalo, intervalo);
+                            }
+                        }
+                    }
+                }
+                
+                // Calcular estatísticas finais
+                for (const comboStr in combinacoesAnalise) {
+                    const analise = combinacoesAnalise[comboStr];
+                    
+                    analise.concursosSemAparecer = ultimoConcurso - analise.ultimaAparicao;
+                    
+                    if (analise.intervalos.length > 0) {
+                        analise.mediaIntervalos = Math.round(
+                            analise.intervalos.reduce((sum, val) => sum + val, 0) / analise.intervalos.length
+                        );
+                    }
+                    
+                    analise.potencial = calcularPotencial(analise, 0);
+                }
+                
+                // Filtrar e ordenar
+                const combinacoesOrdenadas = Object.values(combinacoesAnalise)
+                    .filter(c => c.ocorrencias > 0)
+                    .sort((a, b) => b.potencial - a.potencial);
+                
+                // Atualizar interface
+                exibirCombinacoesAtrasadas(combinacoesOrdenadas.slice(0, 5));
+                
+                elements.loadingMessage.classList.add('hidden');
+                elements.completedMessage.classList.remove('hidden');
+                elements.completedText.textContent = `🔍 Análise da Timemania concluída! ${combinacoesOrdenadas.length} combinações analisadas`;
+                
+                showToast(`Análise finalizada! ${combinacoesOrdenadas.length} combinações da Timemania processadas`, 'success');
+                
+                setTimeout(() => {
+                    elements.completedMessage.classList.add('hidden');
+                }, 4000);
+                
+                return true;
+            } catch (error) {
+                console.error('Erro na análise:', error);
+                elements.loadingMessage.classList.add('hidden');
+                elements.errorMessage.classList.remove('hidden');
+                elements.errorText.textContent = `❌ Erro na análise: ${error.message}`;
+                showToast(`Erro na análise: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function exibirCombinacoesAtrasadas(combinacoes) {
+            if (!combinacoes || combinacoes.length === 0) {
+                elements.combinacoesAtrasadas.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <p class="font-medium">Nenhuma combinação encontrada</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            elements.combinacoesAtrasadas.innerHTML = '';
+            
+            combinacoes.forEach((combo, index) => {
+                const statusInfo = getStatusInfo(combo.potencial);
+                const percentualIntervalo = combo.mediaIntervalos > 0 
+                    ? Math.round((combo.concursosSemAparecer / combo.mediaIntervalos) * 100) 
+                    : 0;
+                
+                const card = document.createElement('div');
+                card.className = `${statusInfo.class} rounded-xl p-6 card-hover slide-in`;
+                card.style.animationDelay = `${index * 100}ms`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold mb-1">
+                                ${statusInfo.emoji} ⚽ Combinação: ${combo.combinacao.join(' - ')}
+                            </h3>
+                            <p class="text-sm opacity-75">
+                                Apareceu ${combo.ocorrencias} vezes em ${allResults.length} sorteios da Timemania
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold ${statusInfo.color} text-lg">
+                                ${statusInfo.text}
+                            </span>
+                            <p class="text-sm font-bold">
+                                ${Math.round(combo.potencial * 100)}% probabilidade
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-white/50 dark:bg-gray-900/50 p-3 rounded-lg backdrop-blur-sm">
+                            <p class="text-xs opacity-75 mb-1">Última Aparição</p>
+                            <p class="font-bold">#${combo.ultimaAparicao}</p>
+                        </div>
+                        <div class="bg-white/50 dark:bg-gray-900/50 p-3 rounded-lg backdrop-blur-sm">
+                            <p class="text-xs opacity-75 mb-1">Sem Aparecer</p>
+                            <p class="font-bold">${combo.concursosSemAparecer}</p>
+                        </div>
+                        <div class="bg-white/50 dark:bg-gray-900/50 p-3 rounded-lg backdrop-blur-sm">
+                            <p class="text-xs opacity-75 mb-1">Intervalo Médio</p>
+                            <p class="font-bold">${combo.mediaIntervalos}</p>
+                        </div>
+                        <div class="bg-white/50 dark:bg-gray-900/50 p-3 rounded-lg backdrop-blur-sm">
+                            <p class="text-xs opacity-75 mb-1">% Progresso</p>
+                            <p class="font-bold">${percentualIntervalo}%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs mb-2">
+                            <span class="font-medium">Progresso do intervalo médio</span>
+                            <span class="font-bold">${percentualIntervalo}%</span>
+                        </div>
+                        <div class="w-full bg-white/30 dark:bg-gray-900/30 rounded-full h-3 overflow-hidden">
+                            <div class="progress-bar-timemania h-3 rounded-full transition-all duration-1000 delay-300" 
+                                 style="width: ${Math.min(percentualIntervalo, 100)}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm bg-white/20 dark:bg-gray-900/20 p-3 rounded-lg">
+                        <p class="font-medium mb-1">⚽ Análise Timemania:</p>
+                        <p>
+                            Esta combinação tem intervalo médio de <strong>${combo.mediaIntervalos} concursos</strong> 
+                            e está há <strong>${combo.concursosSemAparecer} concursos</strong> sem aparecer.
+                            ${percentualIntervalo >= 100 ? 
+                                '🔥 <span class="font-bold text-red-800 dark:text-red-200">Já ultrapassou o intervalo médio!</span>' : 
+                                `Completou <strong>${percentualIntervalo}%</strong> do tempo médio esperado.`
+                            }
+                        </p>
+                    </div>
+                `;
+                
+                elements.combinacoesAtrasadas.appendChild(card);
+            });
+        }
+
+        // Função para gerar palpites inteligentes específicos da Timemania
+        function gerarPalpites() {
+            if (!allResults || allResults.length === 0 || Object.keys(combinacoesAnalise).length === 0) {
+                showToast('Carregue os dados e analise as combinações primeiro!', 'warning');
+                return;
+            }
+
+            elements.loadingMessage.classList.remove('hidden');
+            elements.loadingText.textContent = 'Gerando palpites inteligentes para Timemania...';
+
+            try {
+                // Obter as melhores combinações de dígitos
+                const melhoresCombinacoes = Object.values(combinacoesAnalise)
+                    .filter(c => c.ocorrencias > 0)
+                    .sort((a, b) => b.potencial - a.potencial)
+                    .slice(0, 3);
+
+                // Análise dos números mais frequentes na Timemania
+                const numerosFrequentes = calcularNumerosFrequentesTimemania();
+                const numerosMenosFrequentes = calcularNumerosMenosFrequentesTimemania();
+                const timesFrequentes = calcularTimesFrequentesTimemania();
+
+                // Gerar 5 palpites baseados em diferentes estratégias
+                const palpites = [];
+
+                // Palpite 1: Baseado na melhor combinação de dígitos
+                if (melhoresCombinacoes.length > 0) {
+                    const melhorCombo = melhoresCombinacoes[0];
+                    const numeros = gerarNumerosComDigitosTimemania(melhorCombo.combinacao);
+                    const timeCoracao = timesFrequentes[0] || 'FLAMENGO';
+                    palpites.push({
+                        titulo: '🔥 Alto Potencial - Estatística Avançada',
+                        numeros: numeros.slice(0, 7).sort((a, b) => a - b),
+                        timeCoracao: timeCoracao,
+                        descricao: `Baseado na combinação de dígitos com maior probabilidade (${Math.round(melhorCombo.potencial * 100)}%)`,
+                        estrategia: 'Análise estatística dos padrões históricos da Timemania'
+                    });
+                }
+
+                // Palpite 2: Números mais frequentes
+                palpites.push({
+                    titulo: '📊 Números Mais Frequentes',
+                    numeros: numerosFrequentes.slice(0, 7),
+                    timeCoracao: timesFrequentes[1] || 'SÃO PAULO',
+                    descricao: 'Baseado nos números que mais saem historicamente na Timemania',
+                    estrategia: 'Estratégia de frequência histórica'
+                });
+
+                // Palpite 3: Equilíbrio entre frequentes e menos frequentes
+                const equilibrado = gerarPalpiteEquilibradoTimemania(numerosFrequentes, numerosMenosFrequentes);
+                palpites.push({
+                    titulo: '⚖️ Estratégia Equilibrada',
+                    numeros: equilibrado,
+                    timeCoracao: timesFrequentes[2] || 'CORINTHIANS',
+                    descricao: 'Combinação equilibrada entre números frequentes e menos frequentes',
+                    estrategia: 'Mix de números quentes e frios'
+                });
+
+                // Palpite 4: Tendência recente
+                const tendenciaRecente = analisarTendenciaRecenteTimemania();
+                palpites.push({
+                    titulo: '📈 Tendência Recente',
+                    numeros: tendenciaRecente,
+                    timeCoracao: timesFrequentes[3] || 'PALMEIRAS',
+                    descricao: 'Baseado nos padrões dos últimos 12 sorteios da Timemania',
+                    estrategia: 'Análise das últimas tendências'
+                });
+
+                // Palpite 5: Números em atraso (compensação)
+                const numerosAtraso = gerarPalpiteNumerosAtrasoTimemania();
+                palpites.push({
+                    titulo: '⏰ Números em Atraso',
+                    numeros: numerosAtraso,
+                    timeCoracao: timesFrequentes[4] || 'GRÊMIO',
+                    descricao: 'Números que não aparecem há mais tempo que a média na Timemania',
+                    estrategia: 'Teoria da compensação estatística'
+                });
+
+                exibirPalpitesTimemania(palpites);
+
+                elements.loadingMessage.classList.add('hidden');
+                elements.completedMessage.classList.remove('hidden');
+                elements.completedText.textContent = `🎯 ${palpites.length} palpites inteligentes da Timemania gerados!`;
+
+                showToast(`Palpites da Timemania gerados! ${palpites.length} sugestões disponíveis`, 'success');
+
+                setTimeout(() => {
+                    elements.completedMessage.classList.add('hidden');
+                }, 4000);
+
+            } catch (error) {
+                console.error('Erro ao gerar palpites:', error);
+                elements.loadingMessage.classList.add('hidden');
+                elements.errorMessage.classList.remove('hidden');
+                elements.errorText.textContent = `❌ Erro ao gerar palpites: ${error.message}`;
+                showToast(`Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function calcularNumerosFrequentesTimemania() {
+            const frequencia = {};
+            for (let i = 1; i <= 80; i++) {
+                frequencia[i] = 0;
+            }
+            
+            allResults.forEach(resultado => {
+                resultado.dezenas.forEach(dezena => {
+                    frequencia[parseInt(dezena)]++;
+                });
+            });
+            
+            return Object.entries(frequencia)
+                .sort((a, b) => b[1] - a[1])
+                .map(([num]) => parseInt(num));
+        }
+
+        function calcularNumerosMenosFrequentesTimemania() {
+            const frequencia = {};
+            for (let i = 1; i <= 80; i++) {
+                frequencia[i] = 0;
+            }
+            
+            allResults.forEach(resultado => {
+                resultado.dezenas.forEach(dezena => {
+                    frequencia[parseInt(dezena)]++;
+                });
+            });
+            
+            return Object.entries(frequencia)
+                .sort((a, b) => a[1] - b[1])
+                .map(([num]) => parseInt(num));
+        }
+
+        function calcularTimesFrequentesTimemania() {
+            const frequencia = {};
+            
+            allResults.forEach(resultado => {
+                if (resultado.timeCoracao) {
+                    const time = resultado.timeCoracao.trim();
+                    frequencia[time] = (frequencia[time] || 0) + 1;
+                }
+            });
+            
+            return Object.entries(frequencia)
+                .sort((a, b) => b[1] - a[1])
+                .map(([time]) => time);
+        }
+
+        function gerarNumerosComDigitosTimemania(digitos) {
+            const numeros = [];
+            const digitosSet = new Set(digitos);
+            
+            // Gerar números que contenham os dígitos especificados
+            for (let i = 1; i <= 80; i++) {
+                const numeroStr = i.toString();
+                if (numeroStr.split('').some(d => digitosSet.has(parseInt(d)))) {
+                    numeros.push(i);
+                }
+            }
+            
+            // Embaralhar e retornar uma seleção
+            return embaralharArray(numeros);
+        }
+
+        function gerarPalpiteEquilibradoTimemania(frequentes, menosFrequentes) {
+            const selecionadas = [
+                ...frequentes.slice(0, 4),  // 4 mais frequentes
+                ...menosFrequentes.slice(0, 3)  // 3 menos frequentes
+            ];
+            
+            return embaralharArray(selecionadas).slice(0, 7).sort((a, b) => a - b);
+        }
+
+        function analisarTendenciaRecenteTimemania() {
+            const ultimosSorteios = allResults.slice(-12);
+            const frequenciaRecente = {};
+            
+            for (let i = 1; i <= 80; i++) {
+                frequenciaRecente[i] = 0;
+            }
+            
+            ultimosSorteios.forEach(resultado => {
+                resultado.dezenas.forEach(dezena => {
+                    frequenciaRecente[parseInt(dezena)]++;
+                });
+            });
+            
+            return Object.entries(frequenciaRecente)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 7)
+                .map(([num]) => parseInt(num))
+                .sort((a, b) => a - b);
+        }
+
+        function gerarPalpiteNumerosAtrasoTimemania() {
+            const ultimaAparicao = {};
+            
+            for (let i = 1; i <= 80; i++) {
+                ultimaAparicao[i] = 0;
+            }
+            
+            allResults.forEach((resultado, index) => {
+                resultado.dezenas.forEach(dezena => {
+                    ultimaAparicao[parseInt(dezena)] = index;
+                });
+            });
+            
+            // Calcular "atraso" de cada número
+            const atrasos = [];
+            for (let i = 1; i <= 80; i++) {
+                const atraso = allResults.length - ultimaAparicao[i] - 1;
+                atrasos.push({ numero: i, atraso });
+            }
+            
+            // Selecionar números com maior atraso
+            return atrasos
+                .sort((a, b) => b.atraso - a.atraso)
+                .slice(0, 7)
+                .map(item => item.numero)
+                .sort((a, b) => a - b);
+        }
+
+        function embaralharArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function exibirPalpitesTimemania(palpites) {
+            elements.palpitesContainer.innerHTML = '';
+            
+            palpites.forEach((palpite, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-gradient-to-br from-yellow-50 to-green-50 dark:from-yellow-900/20 dark:to-green-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-800 card-hover slide-in';
+                card.style.animationDelay = `${index * 150}ms`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-green-800 dark:text-green-200">${palpite.titulo}</h3>
+                        <button onclick="copiarPalpiteTimemania(${index})" class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-lg text-sm hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors">
+                            📋 Copiar
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2 text-gray-700 dark:text-gray-300">⚽ Jogo Sugerido:</h4>
+                        <div class="mb-3">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">7 Números:</p>
+                            <div class="grid-numeros-timemania">
+                                ${palpite.numeros.map(d => `
+                                    <span class="numero-timemania">
+                                        ${d.toString().padStart(2, '0')}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Time do Coração:</p>
+                            <span class="time-coracao">
+                                ⚽ ${palpite.timeCoracao}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h4 class="font-semibold mb-1 text-gray-700 dark:text-gray-300">📝 Descrição:</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">${palpite.descricao}</p>
+                    </div>
+                    
+                    <div class="bg-white/50 dark:bg-gray-900/30 p-3 rounded-lg">
+                        <h4 class="font-semibold mb-1 text-gray-700 dark:text-gray-300">🎲 Estratégia:</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">${palpite.estrategia}</p>
+                    </div>
+                `;
+                
+                elements.palpitesContainer.appendChild(card);
+            });
+        }
+
+        // Função global para copiar palpite da Timemania
+        window.copiarPalpiteTimemania = function(index) {
+            const palpites = Array.from(elements.palpitesContainer.children);
+            if (palpites[index]) {
+                const numeros = Array.from(palpites[index].querySelectorAll('.numero-timemania'))
+                    .map(el => el.textContent.trim())
+                    .join(' ');
+                    
+                const timeCoracao = palpites[index].querySelector('.time-coracao')
+                    .textContent.trim().replace('⚽ ', '');
+                
+                const texto = `⚽ Palpite Timemania:\n7 Números: ${numeros}\nTime do Coração: ${timeCoracao}\n\n📱 Gerado pelo Sistema de Análise Inteligente`;
+                
+                navigator.clipboard.writeText(texto).then(() => {
+                    showToast('Palpite da Timemania copiado!', 'success', 2000);
+                }).catch(() => {
+                    showToast('Erro ao copiar palpite', 'error');
+                });
+            }
+        };
+
+        // ===== EVENT LISTENERS =====
+        elements.loadButton.addEventListener('click', fetchTimemaniaResults);
+        elements.analisarCombinacoesBtn.addEventListener('click', analisarCombinacoes);
+        elements.gerarPalpitesBtn.addEventListener('click', gerarPalpites);
+
+        elements.toggleThemeButton.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            updateThemeIcon(document.documentElement.classList.contains('dark'));
+            showToast('Tema alterado!', 'info', 2000);
+        });
+
+        elements.tamanhoComboSelect.addEventListener('change', function() {
+            atualizarInfoCombinacoes();
+            if (Object.keys(combinacoesAnalise).length > 0) {
+                analisarCombinacoes();
+            }
+        });
+
+        // ===== INICIALIZAÇÃO =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('⚽ Sistema de Análise Timemania v2.0 iniciado');
+            
+            atualizarInfoCombinacoes();
+            updateSystemStatus('loading', 'Sistema inicializado - Pronto para carregar dados da Timemania');
+            
+            setTimeout(() => {
+                fetchTimemaniaResults();
+            }, 1000);
+            
+            showToast('Sistema da Timemania inicializado! Use Ctrl+R para recarregar dados', 'info', 6000);
+        });
+    </script>
+</body>
+</html>
